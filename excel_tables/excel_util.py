@@ -34,7 +34,7 @@ def get_columns(header, rows):
     return r
 
 def get_col_widths(header, rows):
-    "Find the maximum length of each column"
+    "Find the maximum length of each column (heuristically)"
     EXCEL_WIDTH_FACTOR = 1.2 # factor for calculating column width
     r = []
     # add some margin on headers (for filter arrows):

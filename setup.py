@@ -1,16 +1,10 @@
 from setuptools import setup, find_packages
 
-VERSION = "0.1.1"
+VERSION = "0.3"
 
-LONG_DESCRIPTION = (
-    "A Python library to export Pandas dataframes to "
-    "pretty Excel workbooks of tables,"
-    "with accent on 1) maximum simplicity and minimal effort"
-    "(sensible defaults). "
-    "2) some flexibility with fonts, number formats, header/tab colors, "
-    "etc."
-)
-
+from pathlib import Path
+THIS_DIRECTORY = Path(__file__).parent
+LONG_DESCRIPTION = (THIS_DIRECTORY / "README.md").read_text()
 
 setup(
     name='excel_tables',
@@ -28,7 +22,9 @@ setup(
     author='Fralau',
     author_email='fralau@bluewin.ch',
     description='Python library to quickly export pandas tables to pretty, sensible Excel workbooks.',
-    url='https://github.com/yourusername/foo',  # Replace with your project's URL
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
+    url='https://github.com/fralau/excel_tables',  # Replace with your project's URL
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
