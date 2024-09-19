@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 from pathlib import Path
 THIS_DIRECTORY = Path(__file__).parent

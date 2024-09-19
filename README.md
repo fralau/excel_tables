@@ -1,10 +1,5 @@
 <div align="center">
 
-# Table of Contents
-
-
-
-
 # Excel-Tables: Finally a Python library to convert Pandas dataframes<br>to pretty Excel files,<br>for business people.
 
 </div>
@@ -14,24 +9,25 @@
 
 <!-- toc -->
 
-- [Why Excel-Tables?](#why-excel-tables)
-  * [The problem of Pandas in a business environment](#the-problem-of-pandas-in-a-business-environment)
-  * [The solution](#the-solution)
-  * [What Excel-Tables is not](#what-excel-tables-is-not)
-  * [Cautions](#cautions)
-- [How to install](#how-to-install)
-- [Usage](#usage)
-  * [Simple example](#simple-example)
-  * [A more elaborate report](#a-more-elaborate-report)
-- [Advanced Usage](#advanced-usage)
-  * [Report with several worksheets](#report-with-several-worksheets)
-  * [Reworking the file in openpyxl](#reworking-the-file-in-openpyxl)
-- [Basic rules](#basic-rules)
-  * [General format decisions](#general-format-decisions)
-  * [General Number formats](#general-number-formats)
-  * [Format for specific columns in a Worksheet](#format-for-specific-columns-in-a-worksheet)
-  * [Worksheet headers](#worksheet-headers)
-- [License](#license)
+- [Excel-Tables: Finally a Python library to convert Pandas dataframesto pretty Excel files,for business people.](#excel-tables-finally-a-python-library-to-convert-pandas-dataframesto-pretty-excel-filesfor-business-people)
+  - [Why Excel-Tables?](#why-excel-tables)
+    - [The problem of Pandas in a business environment](#the-problem-of-pandas-in-a-business-environment)
+    - [The solution](#the-solution)
+    - [What Excel-Tables is not](#what-excel-tables-is-not)
+    - [Cautions](#cautions)
+  - [How to install](#how-to-install)
+  - [Usage](#usage)
+    - [Simple example](#simple-example)
+    - [A more elaborate report](#a-more-elaborate-report)
+  - [Advanced Usage](#advanced-usage)
+    - [Report with several worksheets](#report-with-several-worksheets)
+    - [Reworking the file in openpyxl](#reworking-the-file-in-openpyxl)
+  - [Basic rules](#basic-rules)
+    - [General format decisions](#general-format-decisions)
+    - [General Number formats](#general-number-formats)
+    - [Format for specific columns in a Worksheet](#format-for-specific-columns-in-a-worksheet)
+    - [Worksheet headers](#worksheet-headers)
+  - [License](#license)
 
 <!-- tocstop -->
 
@@ -120,7 +116,7 @@ pip install excel_tables
 ### Simple example
 
 ```python
-from excel_reports import ExcelReport
+from excel_tables import ExcelReport
 report = ExcelReport('Myfile.xlsx', df=df)
 ```
 
@@ -132,8 +128,10 @@ to an Excel file.
 Specifies the font (Helvetica) and emphasizes (bold) the lines
 where the second column (1) is higher than 1000.
 
+(Emphasis is displayed with a yellow background).
+
 ```python
-from excel_reports import ExcelReport
+from excel_tables import ExcelReport
 my_file = 'Myfile.xlsx'
 report = ExcelReport(my_file, 
                     font_name='Helvetica', 
@@ -156,7 +154,7 @@ report.open()
 ### Report with several worksheets
 
 ```python
-from excel_reports import ExcelReport, Worksheet
+from excel_tables import ExcelReport, Worksheet
 
 report = ExcelReport(second_out_file, 
                     font_name='Times New Roman', 

@@ -45,7 +45,8 @@ DEFAULT_FONT_NAME = 'Arial'
 HEADER_COLOR = "#002966"
 TEXT_COLOR_ERROR = "red"
 TEXT_COLOR_WARNING = "#CD853F"  # peru
-ALTERNATE_ROW = '#EEEEEE' # Light grey
+FILL_ALTERNATE = '#EEEEEE' # Light grey
+FILL_EMPHASIS = '#FFFEC8'
 
 
 # Numeric formats (default: English)
@@ -73,7 +74,9 @@ NUM_DATE =   (convert_date, "dd-mm-yyyy")
 # FORMAT_TITLE_FONT = Font(bold=True, color=colors.WHITE)
 FORMAT_TITLE_FILL = PatternFill(start_color=to_argb(HEADER_COLOR),
                                     fill_type='solid')
-FORMAT_ALTERNATE_ROW = PatternFill(start_color=to_argb(ALTERNATE_ROW),
+FORMAT_FILL_ALTERNATE = PatternFill(start_color=to_argb(FILL_ALTERNATE),
+                                    fill_type='solid')
+FORMAT_FILL_EMPHASIS = PatternFill(start_color=to_argb(FILL_EMPHASIS),
                                     fill_type='solid')
 FORMAT_TITLE_ALIGNMENT = Alignment(vertical='top', 
                                    horizontal='center', wrap_text=True)
@@ -202,12 +205,13 @@ def format_xl_report(filename: str,
                 cell.font = font
                 if even_row:
                     # alternate row
-                    cell.fill = FORMAT_ALTERNATE_ROW 
+                    cell.fill = FORMAT_FILL_ALTERNATE 
             # emphasize predicate
             if emphasize(row):
                 for j in range(1, ws.max_column + 1):
                     cell = ws.cell(row=i, column=j)
-                    cell.font = Font(name=font_name, bold=True)
+                    # cell.font = Font(name=font_name, bold=True)
+                    cell.fill = FORMAT_FILL_EMPHASIS
             rows.append(row)
         # insert an image
         image = images.get(tab)
@@ -485,6 +489,9 @@ class ExcelReport(object):
     "The numeric formats (if there is one worksheet)"
     num_formats:dict | list = None
 
+    "The function for emphasizing the rows  (if there is one worksheet)"
+    emphasize: Callable = None
+
 
     """
     Automatically save a file once a worksheet is appended.
@@ -515,7 +522,8 @@ class ExcelReport(object):
             raise ValueError("Filename for Excel report may not be empty")
         self.worksheets = []
         if self.df is not None:
-            wks = Worksheet(self.tabname, self.df)
+            wks = Worksheet(self.tabname, self.df,
+                            emphasize=self.emphasize)
             self.append(wks)
             self.save()
 
