@@ -11,6 +11,8 @@ from dateutil.parser import parse as date_parse
 from collections import namedtuple
 from typing import List
 from functools import partial
+import sqlite3
+import inspect
 
 
 from pydantic.dataclasses import dataclass
@@ -28,7 +30,7 @@ from babel.dates import format_date
 from .excel_util import (get_col_widths, expand_name, get_wks, 
                          get_column_id, to_argb, get_font_color,
                          xl_strftime, open_file)
-from .df_util import df_columns, apply_to_column
+from .df_util import df_columns, apply_to_column, convert_ISO_dates
 
 
 
@@ -84,13 +86,155 @@ FORMAT_TITLE_ALIGNMENT = Alignment(vertical='top',
 SheetImage = namedtuple('SheetImage', 'filename position')
 
 
+# --------------------------------
+# Reading object (import)
+# --------------------------------
+@dataclass(config=dict(arbitrary_types_allowed=True))
+class ExcelDB(object):
+    """
+    Class for querying one or more Excel files with SQL
+    """
+
+    "The Excel file from which to read (optional)"
+    filename: str | None = None
+    
+    "The (main) database file (default: in memory)"
+    db_filename: str = ":memory:"
+
+    "The data connection (opens at creation time)"
+    conn: sqlite3.Connection = None
+
+
+    def __post_init__(self):
+        self.conn = sqlite3.connect(self.db_filename)
+        if self.filename:
+            self.import_file(self.filename)
+
+    @staticmethod
+    def extract_all_tabs(filename:str) -> list[tuple]:
+        """
+        Read an Excel file and return a list of tuples
+        (tab, dataframe)
+        """
+        xlsx = pd.ExcelFile(filename)
+        # Extract all sheet names
+        sheet_names = xlsx.sheet_names
+        # Create a list of dataframes for each sheet
+        tabs = [(sheet, xlsx.parse(sheet)) 
+                for sheet in sheet_names]
+        
+        return tabs
+
+
+    def load(self, tablename: str, df:pd.DataFrame, replace:bool=True):
+        """
+        Load a Pandas dataframe (from any source) into the database,
+        with the tablename.
+        By default, it replaces the table.
+        """
+        if replace:
+            if_exists='replace'
+        else:
+            if_exists='fail'
+        df.to_sql(tablename, self.conn, if_exists=if_exists, index=False)
+
+    def import_file(self, filename:str, replace:bool=True):
+        """
+        Import all tabs of an Excel spreadsheet into the SQLite database
+
+        Every worksheet table (tab) becomes a table in the SQL database.
+
+        An index with the same name replaces the previous one.
+        """
+        tabs = self.extract_all_tabs(filename)
+
+        for tablename, df in tabs:
+            # print(f"{tablename}")
+            self.load(tablename, df, replace=replace)
+
+    def load_wks(self, filename:str, sheetname:str|int, tablename:str=None,
+                   replace:bool=True):
+        "Import a worksheet from an Excel file; you can use the number"
+        xl = pd.ExcelFile(filename)
+        df = xl.parse(sheetname)
+        # if it's an int we need to get the actual name:
+        if isinstance(sheetname, int):
+            sheetname = xl[sheetname]
+        tablename = tablename or sheetname
+        self.load(tablename, df, replace=replace)
+
+    # -------------------------------------------
+    # Query
+    # -------------------------------------------
+    def query(self, query:str, params:list|dict=None) -> pd.DataFrame:
+        """
+        Make an SQL query on against the database
+
+        params can be a list or dictionary according to the sqlite
+        syntax used (by default uses the caller's context as dictionary).
+        See: https://docs.python.org/3/library/sqlite3.html#how-to-use-placeholders-to-bind-values-in-sql-queries
+        
+        Dates stored as ISO strings (as typically done) by Pandas
+        are corrected.
+        """
+        if not params:
+            caller_frame = inspect.currentframe().f_back
+            params = caller_frame.f_locals
+
+        df = pd.read_sql_query(query, self.conn, params=params)
+        convert_ISO_dates(df)
+        return df
+
+    
+    def _get_values(self, query:str) -> list:
+        "Get a list of values from the database (one column query)"
+        cursor = self.conn.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return [el[0] for el in result]
+    
+    @property
+    def tables(self) -> list[str]:
+        "The list of tables loaded"
+        query = "SELECT name FROM sqlite_master WHERE type='table';"
+        return self._get_values(query)
+    
+
+    def table(self, id:str|int=0) -> pd.DataFrame:
+        "Gets the table by its number or name (default: first available)"
+        if isinstance(id, int):
+            tablename = self.tables[id]
+        else:
+            # it's the name
+            tablename = id
+        return self.query(f"SELECT * FROM [{tablename}]")
+    
+    
+    # -------------------------------------------
+    # Close or delete data
+    # -------------------------------------------
+
+
+    def drop(self, tablename:str):
+        "Drop a table from the database"
+        if not tablename in self.tables:
+            raise NameError(f"Cannot delete '{tablename}' (non-existent)")
+        cursor = self.conn.cursor()
+        cursor.execute(f"DROP TABLE {tablename}")
+
+    def close(self):
+        "Close the database"
+        self.conn.close()
+
+    def __del__(self):
+        self.close()
 
 
 
 
 
 # --------------------------------
-# Low-level builders
+# Low-level export builders
 # --------------------------------
 
 def format_xl_report(filename: str, 

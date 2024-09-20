@@ -5,7 +5,7 @@
 </div>
 
 ---
-<!-- Use the Python markdown-toc -i command -->
+<!-- Use: markdown-toc -i README.md -->
 
 <!-- toc -->
 
@@ -27,6 +27,15 @@
     - [General Number formats](#general-number-formats)
     - [Format for specific columns in a Worksheet](#format-for-specific-columns-in-a-worksheet)
     - [Worksheet headers](#worksheet-headers)
+  - [Reading an Existing Excel File as a Database](#reading-an-existing-excel-file-as-a-database)
+    - [Introduction](#introduction)
+    - [Initializing](#initializing)
+    - [Initializing with a single table](#initializing-with-a-single-table)
+    - [Adding a dataframe (from some other origin)](#adding-a-dataframe-from-some-other-origin)
+    - [Making a query](#making-a-query)
+    - [Adding the tables from another Excel file](#adding-the-tables-from-another-excel-file)
+    - [Dropping a table](#dropping-a-table)
+    - [Note on dates](#note-on-dates)
   - [License](#license)
 
 <!-- tocstop -->
@@ -277,7 +286,117 @@ or, once the worksheet has already been created:
 
 ```python
 wks.header_color = 'ligthblue'
-````
+```
+## Reading an Existing Excel File as a Database
+
+### Introduction
+
+Sometimes it is useful to consider an existing Excel file
+as a database that can be queried, typically
+to perform filters or joins on tables, and then integrate the result
+into an ExcelReport.
+
+
+### Initializing
+
+This loads all tabs (worksheets) from an Excel file into memory:
+
+```python
+from excel_tables import ExcelDB
+xldb = ExcelDB('my_file.xlsx')
+```
+
+If you want to have database file to be kept on disk, use the 
+optional parameter `db_filename`:
+```python
+xldb = ExcelDB('my_file.xlsx', db_filename='my_file.db')
+```
+
+### Initializing with a single table
+
+To load a single tab (worksheet) as a table, use the `load_wks()` method;
+you can use the worksheet number if you wish.
+The `tablename` argument is optional (if absent, the method will figure
+out the name).
+
+```python
+from excel_tables import ExcelDB
+xldb = ExcelDB()
+xldb.import_wks('my_file.xlsx', sheetname=1, tablename='mytable')
+```
+
+By default, it replaces all tables with the same name with the current one.
+If you want to prevent that, add the argument `replace=False`.
+
+### Adding a dataframe (from some other origin)
+
+You can easily add a Pandas dataframe from any origin:
+
+```python
+xldb.load('mytable', df)
+```
+
+By default, it replaces a previous table with the same name 
+with the current one.
+If you want to prevent that, add the argument `replace=False`.
+
+### Making a query
+
+```python
+MAX = 80
+
+MYQUERY = """
+  SELECT * 
+  FROM Foo
+  LEFT JOIN [Bar baz]
+  ON Foo.x = [Bar baz].[First Column]
+  WHERE Foo.x > :MAX
+"""
+df = xldb.query(MY_QUERY)
+```
+
+You can use Python [SQLite3 placeholders for values](https://docs.python.org/3/library/sqlite3.html#how-to-use-placeholders-to-bind-values-in-sql-queries)
+(but not table or column names; for those you might need f-strings).
+
+In this case, `:MAX` is a parameter that refers to an existing variable
+name in the local environment.
+
+If you wish you can pass a list or dictionary of parameters e.g.:
+
+```python
+df = xldb.query(MY_QUERY, params={'foo'=5, 'bar'=8})
+```
+
+Then you could easily use that dataframe into an ExcelReport.
+
+
+
+### Adding the tables from another Excel file
+
+```python
+xldb.import_file('second_file.xlsx')
+```
+
+By default, it replaces previous tables with the same name 
+with the ones in that file.
+If you want to prevent that, add the argument `replace=False`.
+
+### Dropping a table
+
+If you want to remove a table from the database:
+
+```python
+xldb.drop('mytable')
+```
+
+
+### Note on dates
+
+SQLite stores dates as ISO strings; however, the dataframes
+generated from queries automatically detect them and reconverts
+them as Datetime objects, which will be correctly processed by
+the `ExcelReport` class.
+
 
 ## License
 
@@ -292,4 +411,5 @@ The **'.xlsx' format** is a standard, part of the
 Office Open XML (OOXML) format,
 standardized by ECMA (ECMA-376) and ISO/IEC (ISO/IEC 29500).
 It is licensed under the [Open Specification Promise by Microsoft](https://learn.microsoft.com/en-us/openspecs/dev_center/ms-devcentlp/1c24c7c8-28b0-4ce1-a47d-95fe1ff504bc).
+
 
