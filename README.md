@@ -1,6 +1,6 @@
 <div align="center">
 
-# Excel-Tables: Finally a Python library to convert Pandas dataframes<br>to pretty Excel files,<br>for business people.
+# Excel-Tables<br>Finally a Python library to convert Pandas dataframes<br>to pretty Excel files,<br>for business people.
 
 </div>
 
@@ -9,7 +9,7 @@
 
 <!-- toc -->
 
-- [Excel-Tables: Finally a Python library to convert Pandas dataframesto pretty Excel files,for business people.](#excel-tables-finally-a-python-library-to-convert-pandas-dataframesto-pretty-excel-filesfor-business-people)
+- [Excel-TablesFinally a Python library to convert Pandas dataframesto pretty Excel files,for business people.](#excel-tablesfinally-a-python-library-to-convert-pandas-dataframesto-pretty-excel-filesfor-business-people)
   - [Why Excel-Tables?](#why-excel-tables)
     - [The problem of Pandas in a business environment](#the-problem-of-pandas-in-a-business-environment)
     - [The solution](#the-solution)
@@ -21,6 +21,7 @@
     - [A more elaborate report](#a-more-elaborate-report)
   - [Advanced Usage](#advanced-usage)
     - [Report with several worksheets](#report-with-several-worksheets)
+    - [Redefining a Report or a Worksheet](#redefining-a-report-or-a-worksheet)
     - [Reworking the file in openpyxl](#reworking-the-file-in-openpyxl)
   - [Basic rules](#basic-rules)
     - [General format decisions](#general-format-decisions)
@@ -47,18 +48,17 @@
 Companies rely on databases to store their data, but
 only a fraction of the staff know how to query one.  
 
-Today, their only tool of work is a spreadsheet: **Microsoft Excel**.
+Today, their main tool of work is a spreadsheet: **Microsoft Excel**.
 
 Pandas is great for querying relational databases quickly,
 or importing tables in a variety of formats. It also exports dataframes to Excel very well. It's a perfect tool for business use.
 
-
-However, the resulting Excel files are bland:
-no colors, no number formatting, etc.
-In a business environment, one cannot present an unformatted Excel
-file to a colleague; this is considered poor work.
-
-There are minimal standards for Excel spreadsheets.
+> :warning: **Warning**
+> However, the resulting Excel files are bland:
+> no colors, no number formatting, etc.
+> In a business environment, one cannot present an unformatted Excel
+> file to a colleague; this is considered poor work.
+> There are minimal standards for Excel spreadsheets.
 
 Therefore, every time one does any data extraction,
 one has to spend _manually_ **five minutes or up to a quarter of an hour**,
@@ -163,29 +163,20 @@ report.open()
 ### Report with several worksheets
 
 ```python
-from excel_tables import ExcelReport, Worksheet
+from excel_tables import ExcelReport
 
 report = ExcelReport(second_out_file, 
                     font_name='Times New Roman', 
                     format_int="[>=1000]#'##0;[<1000]0",
                     format_float="[>=1000]#'##0.00;[<1000]0.00")
 
-wks = Worksheet('Income', df1, emphasize=lambda x: x[1] > 20000,
+report.add_sheet('Income', df1, emphasize=lambda x: x[1] > 20000,
                         num_formats={'Feet': "#'##0"})
-report.append(wks)
 
-wks = Worksheet('Expenses', df2, num_formats={'Rates': "#'##0.0000"})
-report.append(wks)
+# add other attributes
+wks = report.add_sheet('Expenses', df2, num_formats={'Rates': "#'##0.0000"})
+wks.header_color = "light_blue"
 report.save(open_file=True)
-```
-
-You can can also specify arguments in this way:
-
-```python
-report = ExcelReport(second_out_file)
-report.font_name='Times New Roman', 
-report.format_int="[>=1000]#'##0;[<1000]0",
-report.format_float="[>=1000]#'##0.00;[<1000]0.00"
 ```
 
 Since no dataframe is provided when the report objected is created,
@@ -202,6 +193,36 @@ For worksheets:
   if the default are not appropriate. It is a dictionary of columns, Excel formats.`num_formats` is a dictionary of column names and Excel numeric formats.
 
 
+
+### Redefining a Report or a Worksheet
+You can can also specify arguments in this way:
+
+```python
+from excel_tables import ExcelReport
+
+report = ExcelReport(second_out_file)
+report.font_name='Times New Roman', 
+report.format_int="[>=1000]#'##0;[<1000]0",
+report.format_float="[>=1000]#'##0.00;[<1000]0.00"
+```
+
+Another way of defining a worksheet is by explicitly creating a worksheet
+object
+
+```python
+from excel_tables import ExcelReport, Worksheet
+report = ExcelReport(second_out_file)
+wks = Worksheet('Income', df1, emphasize=lambda x: x[1] > 20000,
+                        num_formats={'Feet': "#'##0"})
+report.append(wks)
+```
+
+> :memo: **Note**
+> Using the Worksheet object has the advantage that all available attributes
+> of the Worksheet are immediately available, without needing
+> to redefine them.
+
+
 ### Reworking the file in openpyxl
 
 In the unlikely case you wish to rework a report using the 
@@ -209,7 +230,7 @@ In the unlikely case you wish to rework a report using the
 
 An ExcelReport object has an attribute `workbook`.
 
-**Keep in mind that the ExcelReport `Worksheet` class is not the same as the one in openpyxl.**
+
 
 ```python
 wb = report.workbook
@@ -219,6 +240,9 @@ first_sheet = wb.worksheets['Main']
 ...
 wb.save(myfile)
 ```
+
+> :warning: **Warning**
+> Keep in mind that the ExcelReport `Worksheet` class is not the same as the one in openpyxl.
 
 ## Basic rules
 
@@ -367,7 +391,15 @@ If you wish you can pass a list or dictionary of parameters e.g.:
 df = xldb.query(MY_QUERY, params={'foo'=5, 'bar'=8})
 ```
 
-Then you could easily use that dataframe into an ExcelReport.
+Then you could easily use that dataframe into an `ExcelReport` object:
+
+```python
+report = ExcelReport('my_file.xlsx', ...) 
+...
+report.add_sheet('tabname', df)
+...
+report.save()
+```
 
 
 

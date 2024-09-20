@@ -82,10 +82,11 @@ def test(in_file:str, out_file:str, extended:bool=False,
         df = xldb.table(0)
         print(df_columns(df))
         assert df_columns(df)['Ascension'] == 'date'
-        wks = Worksheet('Mountains', df, emphasize=lambda x: x[1] > 8500,
-                        num_formats={'Feet': "#'##0"})
+        wks = report.add_sheet('Mountains', df, 
+                               emphasize=lambda x: x[1] > 8500,
+                               num_formats={'Feet': "#'##0"})
+
         print("Columns:", wks.columns)
-        report.append(wks)
         print(report)
 
         title("Second worksheet")
@@ -123,10 +124,10 @@ def test(in_file:str, out_file:str, extended:bool=False,
             ON main.[Closest City] = city.city
         WHERE Metres > :MAX_ALTITUDE
         """
+        ic(myquery)
         df = xldb.query(myquery)
-        wks = Worksheet(TABLE, df)
-        report.append(wks)
-
+        report.add_sheet(TABLE, df)
+        
         title("Save")
         # no autosave by default:
         report.rich_print(1)

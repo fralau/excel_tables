@@ -9,14 +9,13 @@ from collections.abc import Callable
 from copy import copy
 from dateutil.parser import parse as date_parse
 from collections import namedtuple
-from typing import List
+from typing import List, get_type_hints
 from functools import partial
 import sqlite3
 import inspect
 
 
 from pydantic.dataclasses import dataclass
-
 import pandas as pd
 import openpyxl, xlsxwriter
 from openpyxl.styles import Font, Alignment, PatternFill, colors
@@ -678,6 +677,24 @@ class ExcelReport(object):
         if self.auto_save:
             self.save()
 
+    def add_sheet(self, sheet_name:str, df: pd.DataFrame, 
+                  num_formats:dict|list=None,
+                  emphasize: Callable=None,
+                  *args, **kwargs):
+        """
+        Add a worksheet (same arguments as for the Worksheet object).
+
+        Typically:
+
+        self.add_sheet('foo', df)
+        """
+        worksheet = Worksheet(sheet_name, df, num_formats=num_formats,
+                              emphasize=emphasize,
+                              *args, **kwargs)
+        self.append(worksheet)
+        return worksheet   
+
+
     # -------------------------------------------
     # These are utility functions to build
     #  the final call to format_xl_report
@@ -695,6 +712,7 @@ class ExcelReport(object):
                 if worksheet.sheet_name == wks_id:
                     return worksheet
             raise KeyError(f"Cannot find worksheet '{wks_id}'")
+        
 
 
     @property
@@ -806,3 +824,4 @@ class ExcelReport(object):
     def __str__(self):
         "Printing the first table"
         return self.rich_print(printing=False)
+
