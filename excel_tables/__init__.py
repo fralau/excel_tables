@@ -534,10 +534,10 @@ class Worksheet(object):
     df: pd.DataFrame
 
     "The numeric formats (special instructions, on top of defaults)"
-    num_formats:dict|list = None
+    num_formats:dict| list | None = None
 
     "The function for emphasizing the rows"
-    emphasize: Callable = None
+    emphasize: Callable | None = None
 
     "The color of the tab in the Excel window"
     tab_color: str = None
@@ -628,7 +628,7 @@ class ExcelReport(object):
 
 
     "Worksheets that will be part of the file (1 dataframe per worksheet)"
-    worksheets: List[Worksheet] = None
+    worksheets: List[Worksheet] | None = None
 
     "The reference font"
     font_name: str = DEFAULT_FONT_NAME
@@ -646,10 +646,10 @@ class ExcelReport(object):
     tabname:str = 'Main'
 
     "The numeric formats (if there is one worksheet)"
-    num_formats:dict | list = None
+    num_formats:dict | list | None = None
 
     "The function for emphasizing the rows  (if there is one worksheet)"
-    emphasize: Callable = None
+    emphasize: Callable | None = None
 
 
     """

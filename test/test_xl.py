@@ -22,6 +22,8 @@ def test_colors():
         print(name, argb)
         assert to_argb(name).upper() == argb.upper()
 
+    # test the color of the font against the background color
+    # for title rows
     COLORS_BACKGROUND = [
         ('navy', 'white'),
         ('firebrick', 'white'),
