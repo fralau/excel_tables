@@ -6,8 +6,10 @@ from functools import lru_cache
 from datetime import datetime
 
 
-import xlsxwriter
+# import xlsxwriter
+
 import openpyxl
+from openpyxl.utils import get_column_letter
 from tkinter import filedialog
 from webcolors import name_to_hex
 
@@ -74,7 +76,7 @@ def to_argb(color:str):
     https://www.delftstack.com/howto/python/python-hex-to-rgb/
     """
     r = '%02x%02x%02x' % to_rgb(color)
-    return r
+    return r.upper()
 
 
 
@@ -117,8 +119,9 @@ def get_column_id(column_names, col:str, return_int:bool=False):
     if return_int:
         return col_id + 1 # Excel
     else:
-        # default case
-        return xlsxwriter.utility.xl_col_to_name(col_id)
+        # default case: return a column letter (A, B...)
+        # return xlsxwriter.utility.xl_col_to_name(col_id)
+        return get_column_letter(col_id + 1)
         
 def get_wks(workbook: openpyxl.workbook, tab=0):
     """ 
@@ -138,12 +141,15 @@ def get_wks(workbook: openpyxl.workbook, tab=0):
         tab = sheets[tab]
     return workbook[tab]
 
-def expand_name(name:str, actual, desc='item',
-    regex_marker:str='//'):
+def expand_name(name:str, actual:list[str], desc='item',
+                regex_marker:str='//',
+                case_sensitive:bool=False) -> list[str]:
     """
     Expand a regex name to match those
     contained in another (actual).
-    If no equivalence is found, fail
+    If no equivalence is found, fail with Value Error.
+
+    For simplicity, the regex is case insensitive by default.
 
     Arguments
     ---------
@@ -154,10 +160,16 @@ def expand_name(name:str, actual, desc='item',
     desc: descriptive name to be used in the error message
         ('filename', 'col', 'row', etc.)
     regex_marker: the prefix for a regex if different from '//'
+    case_sensitive: if the regex is case sensitive.
 
     Returns
     -------
     List of items
+
+    Examples:
+    ---------
+    expand_name('//foo', ['foo', 'bar', 'baz', 'foobar', 'No Fool]) -> 
+        ['foo', 'foobar', 'No Fool']
     """
     # make sure its all string, or fail
     if not all([isinstance(el, str) for el in actual]):
@@ -168,11 +180,14 @@ def expand_name(name:str, actual, desc='item',
     if  name.startswith(regex_marker):
         found = []
         exp = name[len(regex_marker):] # remove prefix
-        parser = re.compile(exp) # regexp
+        flags = 0
+        if not case_sensitive:
+            flags = flags | re.IGNORECASE
+        parser = re.compile(exp, flags) # regexp
         # print("EXPAND:", name, actual)
         for actual_el in actual:
             # sometimes col names can be ints!
-            if parser.fullmatch(actual_el):
+            if parser.search(actual_el):
                     # print("  Found:", actual_el)
                     found.append(actual_el)
         if not found:

@@ -86,7 +86,7 @@ SheetImage = namedtuple('SheetImage', 'filename position')
 
 
 # --------------------------------
-# Reading object (import)
+# Reading object for an Excel file (import)
 # --------------------------------
 @dataclass(config=dict(arbitrary_types_allowed=True))
 class ExcelDB(object):
@@ -185,18 +185,34 @@ class ExcelDB(object):
         return df
 
     
-    def _get_values(self, query:str) -> list:
-        "Get a list of values from the database (one column query)"
-        cursor = self.conn.cursor()
-        cursor.execute(query)
-        result = cursor.fetchall()
-        return [el[0] for el in result]
+    def get_values(self, query:str, params:list|dict=None) -> list:
+        """
+        Get a list of values from the database (one column query)
+
+        NOTE
+        ----
+        This returns a list; good for most business purposes,
+        but not for large queries.
+        """
+        if not params:
+            caller_frame = inspect.currentframe().f_back
+            params = caller_frame.f_locals
+        df = self.query(query, params)
+        return df.iloc[:, 0].tolist()
+    
+    def get_value(self, query:str,
+                  params:list|dict=None) -> str | int | float:
+        "Get a value from a database, typically for a `count(*)`"
+        if not params:
+            caller_frame = inspect.currentframe().f_back
+            params = caller_frame.f_locals
+        return self.get_values(query, params)[0]
     
     @property
     def tables(self) -> list[str]:
         "The list of tables loaded"
         query = "SELECT name FROM sqlite_master WHERE type='table';"
-        return self._get_values(query)
+        return self.get_values(query)
     
 
     def table(self, id:str|int=0) -> pd.DataFrame:
@@ -699,6 +715,10 @@ class ExcelReport(object):
     # These are utility functions to build
     #  the final call to format_xl_report
     # -------------------------------------------
+    @property
+    def tabs(self) -> list[str]:
+        "The list of worksheet tables"
+        return [wks.sheet_name for wks in self.worksheets]
 
     def wks(self, wks_id:str|int) -> Worksheet:
         "Find a worksheet by name or number"

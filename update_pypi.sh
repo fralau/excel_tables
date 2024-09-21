@@ -12,14 +12,18 @@ function warn {
 
 setup="python3 setup.py"
 package_name=$($setup --name)
-package_version=v$($setup --version) # add a 'v' in front (git convention) 
+package_version=v$($setup --version) # add a 'v' in front (git convention)
 
 warn "UPDATE PACKAGE $package_name ($package_version) ON PYPI:"
 warn "Cleaning up..."
 rm -rf dist
 rm -rf build
 warn "Recreating wheels..."
-$setup sdist bdist_wheel  1>/dev/null
+# Ddeprecated:
+# $setup sdist bdist_wheel  1>/dev/null
+
+# New version: you must install the Python build package:
+python3 -m build --wheel --outdir dist > /dev/null
 # update version (just in case):
 package_version=v$($setup --version) # add a 'v' in front (git convention) 
 warn "---"

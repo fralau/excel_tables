@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = "0.5"
+VERSION = "0.5.1"
 
 from pathlib import Path
 THIS_DIRECTORY = Path(__file__).parent
@@ -14,7 +14,7 @@ setup(
         # classes and data structures
         'pandas', 
         # excel
-        'openpyxl', 'xlsxwriter',
+        'openpyxl',
         # presentation 
         'rich', 'babel', 'webcolors'
 

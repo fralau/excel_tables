@@ -26,12 +26,24 @@ def map_dtype(dtype) -> str:
         return "unknown"
 
 
+def is_column_str(df:pd.DataFrame, col: str) -> bool:
+    "Check if a column is an str (regardless of its content)"
+    col_type = df.dtypes[col]
+    return pd.api.types.is_string_dtype(col_type)
+
+def is_column_datetime(df:pd.DataFrame, col: str) -> bool:
+    "Check if a column is a datetime (not str)"
+    col_type = df.dtypes[col]
+    return pd.api.types.is_datetime64_any_dtype(col_type)
+
 def is_dates_no_time(df:pd.DataFrame, col:str) -> bool:
     """
     Check if a dataframe's column's data are pure dates
     (no hours, minutes, seconds...).
     It is assumed that the column is already dates.
     """
+    if not is_column_datetime(df, col):
+        return False
     # Normalize the dates to remove hours, minutes, and seconds
     normalized_dates = df[col].dt.normalize()
 
@@ -53,6 +65,9 @@ def is_iso_date(df:pd.DataFrame, col:str):
     bool: True if the column is composed of ISO dates or datetimes,
         False otherwise.
     """
+    if not is_column_str(df, col):
+        return False
+
     column = df[col]
     # Define ISO date and datetime patterns
     # YYYY-MM-DD:
