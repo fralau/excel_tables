@@ -23,6 +23,13 @@ dependencies = [
 ]
 urls = { "Homepage" = "https://github.com/fralau/excel_tables" }
 
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "click",
+    "icecream"
+]
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
