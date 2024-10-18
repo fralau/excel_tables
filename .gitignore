@@ -108,3 +108,7 @@ node_modules/
 
 # Backup files (Microsoft Office)
 ~$*
+
+# Specific
+output*.xlsx
+
