@@ -13,7 +13,7 @@ function warn {
 }
 
 function get_value {
-    # get the value from the config file
+    # get the value from the config file (requires the Python toml package)
     toml get --toml-path pyproject.toml $1
 }
 

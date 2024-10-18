@@ -140,7 +140,7 @@ def test_long(in_file:str = TEST_FILENAME,
     WHERE Metres > :MAX_ALTITUDE
     """
     df = xldb.query(myquery)
-    wks = report.add_sheet("Higher than {MAX_ALTITUDE}", df)  
+    wks = report.add_sheet(f"Higher than {MAX_ALTITUDE}", df)  
 
 
     title("Fifth worksheet (JOIN)")
