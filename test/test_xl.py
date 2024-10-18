@@ -1,7 +1,7 @@
 "Test Excel utilities"
 
 import pytest
-from excel_tables.excel_util import to_argb, get_font_color, expand_name
+from excel_tables.excel_util import to_argb, get_font_color, expand_name, xl_col_to_name
 
 def test_colors():
     "Test all the color utilities"
@@ -37,6 +37,14 @@ def test_colors():
     for name, background in COLORS_BACKGROUND:
         print(name, background)
         assert get_font_color(name) == background
+
+def test_col_to_name():
+    "Test expand columns"
+    corr = {0: 'A', 25: 'Z', 26: 'AA', 51:'AZ',
+            701:'ZZ', 702:'AAA'}
+    for i, result in corr.items():
+        print("Testing column", i, result, '...')
+        assert xl_col_to_name(i) == result, "Wrong column name: {i}=>{result}"
 
 def test_expand_name():
     "Test expand name"

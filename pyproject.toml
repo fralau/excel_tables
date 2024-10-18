@@ -13,7 +13,6 @@ dependencies = [
     "pydantic",
     # Excel:
     "openpyxl",
-    "xlsxwriter", # clarify why it is still needed?
     # presentation:
     "rich",
     "babel",

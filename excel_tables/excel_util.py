@@ -53,6 +53,16 @@ def get_col_widths(header, rows):
         # print(col, "=>", chars)
     return r
 
+def xl_col_to_name(col_num:int) -> str:
+    """
+    Convert a zero-indexed column number to an Excel column name.
+    """
+    name = ''
+    while col_num >= 0:
+        name = chr(col_num % 26 + ord('A')) + name
+        col_num = col_num // 26 - 1
+    return name
+
 
 # --------------------------------
 # Workon colors

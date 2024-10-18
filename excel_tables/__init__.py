@@ -17,7 +17,7 @@ import inspect
 
 from pydantic.dataclasses import dataclass
 import pandas as pd
-import openpyxl, xlsxwriter
+import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill, colors
 from rich.console import Console, Capture
 from rich.table import Table
@@ -29,6 +29,8 @@ from babel.dates import format_date
 from .excel_util import (get_col_widths, expand_name, get_wks, 
                          get_column_id, to_argb, get_font_color,
                          xl_strftime, open_file)
+# replaces 'from xlsxwriter.utility import xl_col_to_name':
+from .excel_util import xl_col_to_name
 from .df_util import df_columns, apply_to_column, convert_ISO_dates
 
 
@@ -411,7 +413,7 @@ def format_xl_report(filename: str,
         column_widths = get_col_widths(header, rows) 
         for i, width in enumerate(column_widths):
             # get the ASCII value
-            col = xlsxwriter.utility.xl_col_to_name(i)
+            col = xl_col_to_name(i)
             ws.column_dimensions[col].width = width
 
         # freeze first row
