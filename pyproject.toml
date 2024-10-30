@@ -1,6 +1,6 @@
 [project]
 name = "excel_tables"
-version = "0.5.3"
+version = "0.5.4"
 description = "Python library to quickly export pandas tables to pretty, sensible Excel workbooks."
 readme = "README.md"
 requires-python = ">=3.6"

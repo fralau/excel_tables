@@ -80,8 +80,13 @@ def is_iso_date(df:pd.DataFrame, col:str):
     
     # Check each value and return False immediately if necessary:
     for value in non_empty_values:
-        if not (date_pattern.match(value) or datetime_pattern.match(value)):
-            # print(col, value, "not a a date")
+        # also check that it's actually a string, for more robustness:
+        try:
+            if not (date_pattern.match(value) or datetime_pattern.match(value)):
+                # print(col, value, "not a a date")
+                return False
+        except TypeError:
+            # in the unlikely case of failure
             return False
     return True
 
